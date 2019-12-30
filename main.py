@@ -15,7 +15,7 @@ SCREEN_TITLE = "My Epic Game"
 MOVEMENT_SPEED = 3
 
 class PlayerSprite:
-    def __init__(self, pos_x, pos_y, vel_x, vel_y, height, width, color):
+    def __init__(self, pos_x, pos_y, vel_x, vel_y, width, height, color):
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.vel_x = vel_x
@@ -30,6 +30,17 @@ class PlayerSprite:
     def update(self):
         self.pos_x += self.vel_x
         self.pos_y += self.vel_y
+
+class TileSprite:
+    def __init__(self,pos_x, pos_y, width, height, color):
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.height = height
+        self.width = width
+        self.color = color
+
+    def draw(self):
+        arcade.draw_rectangle_filled(self.pos_x, self.pos_y, self.height, self.width, self.color)
 
 class MyGame(arcade.Window):
     """
@@ -47,6 +58,7 @@ class MyGame(arcade.Window):
 
         # If you have sprite lists, you should create them here,
         self.player = PlayerSprite(50,50, 0,0, 20, 20, arcade.color.WHITE)
+        self.tile = TileSprite(SCREEN_WIDTH/2, 10, 20, 20, arcade.color.BLUE)
 
     def setup(self):
         # Create your sprites and sprite lists here
@@ -62,8 +74,19 @@ class MyGame(arcade.Window):
         arcade.start_render()
         # Call draw() on all your sprite lists below
         self.player.draw()
+        self.tile.draw()
 
-        
+    def check_for_collission(self, object1, object2):
+        if object1.pos_x + object1.width > object2.pos_x and object1.pos_x < object2.pos_x + object2.width and object1.pos_y + object1.height > object2.pos_y and object1.pos_y < object2.pos_y + object2.height:
+            print("collission")
+            if object1.vel_x > 0:
+                object1.pos_x = object2.pos_x - object1.width
+            if object1.vel_x < 0:
+                object1.pos_x = object2.pos_x + object2.width
+            if object1.vel_y > 0:
+                object1.pos_y = object2.pos_y - object2.height
+            if object1.vel_y < 0:
+                object1.pos_y = object2.pos_y + object1.height
 
     def update(self, delta_time):
         """
@@ -72,6 +95,7 @@ class MyGame(arcade.Window):
         need it.
         """
         self.player.update()
+        self.check_for_collission(self.player, self.tile)
 
     def on_key_press(self, key, key_modifiers):
         """
@@ -80,7 +104,6 @@ class MyGame(arcade.Window):
         For a full list of keys, see:
         http://arcade.academy/arcade.key.html
         """
-        print(key, "press")
         if key == arcade.key.LEFT:
             self.player.vel_x = -MOVEMENT_SPEED
         elif key == arcade.key.RIGHT:
@@ -94,7 +117,6 @@ class MyGame(arcade.Window):
         """
         Called whenever the user lets off a previously pressed key.
         """
-        print(key, "release")
         if key == arcade.key.LEFT or key == arcade.key.RIGHT:
             self.player.vel_x = 0
         elif key == arcade.key.UP or key == arcade.key.DOWN:
